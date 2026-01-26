@@ -1,0 +1,13 @@
+date,product,sales,revenue,region
+2024-01-01,Laptop,45,45000,North
+2024-01-01,Phone,120,36000,South
+2024-01-01,Tablet,80,24000,East
+2024-01-02,Laptop,52,52000,West
+2024-01-02,Phone,135,40500,North
+2024-01-02,Tablet,95,28500,South
+2024-01-03,Laptop,48,48000,East
+2024-01-03,Phone,142,42600,West
+2024-01-03,Tablet,88,26400,North
+2024-01-04,Laptop,60,60000,South
+2024-01-04,Phone,150,45000,East
+2024-01-04,Tablet,100,30000,West
