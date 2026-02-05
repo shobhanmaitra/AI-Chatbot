@@ -50,8 +50,9 @@
         }
 
         .message {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             display: flex;
+            flex-direction: column;
             animation: fadeIn 0.3s;
         }
 
@@ -68,7 +69,11 @@
         }
 
         .message.user {
-            justify-content: flex-end;
+            align-items: flex-end;
+        }
+
+        .message.bot {
+            align-items: flex-start;
         }
 
         .message-content {
@@ -91,12 +96,44 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
+        .timestamp {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+            padding: 0 5px;
+        }
+
+        .message-counter {
+            text-align: center;
+            padding: 8px;
+            background: #f0f0f0;
+            font-size: 12px;
+            color: #666;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
         .chat-input-container {
             padding: 20px;
             background: white;
             border-top: 1px solid #e0e0e0;
             display: flex;
             gap: 10px;
+        }
+
+        #clearBtn {
+            padding: 12px 20px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        #clearBtn:hover {
+            transform: scale(1.05);
+            background: #d32f2f;
         }
 
         #userInput {
@@ -168,17 +205,23 @@
 
         <div class="status" id="status">Connecting to server...</div>
 
+        <div class="message-counter" id="messageCounter">
+            Messages sent: 0
+        </div>
+
         <div class="chat-messages" id="chatMessages">
             <div class="message bot">
                 <div class="message-content">
                     👋 Hello! I'm your AI assistant. How can I help you today?
                 </div>
+                <div class="timestamp" id="initialTime"></div>
             </div>
         </div>
 
         <div class="typing-indicator" id="typingIndicator">Bot is typing...</div>
 
         <div class="chat-input-container">
+            <button id="clearBtn">Clear</button>
             <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
             <button id="sendBtn">Send</button>
         </div>
@@ -191,8 +234,29 @@
         const sendBtn = document.getElementById('sendBtn');
         const status = document.getElementById('status');
         const typingIndicator = document.getElementById('typingIndicator');
+        const messageCounter = document.getElementById('messageCounter');
 
-        // Test connection on load
+        let messageCount = 0;
+
+        function getCurrentTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+
+            return `${hours}:${minutes} ${ampm}`;
+        }
+
+        document.getElementById('initialTime').textContent = getCurrentTime();
+
+        function updateCounter() {
+            messageCounter.textContent = `Messages sent: ${messageCount}`;
+        }
+
         async function testConnection() {
             try {
                 const response = await fetch(`${API_URL}/test`);
@@ -205,33 +269,58 @@
             }
         }
 
-        // Add message to chat
-        function addMessage(content, isUser) {
+        // FEATURE 2: TYPING ANIMATION
+        function addMessage(content, isUser, animate = false) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
 
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content';
-            contentDiv.textContent = content;
+
+            const timestampDiv = document.createElement('div');
+            timestampDiv.className = 'timestamp';
+            timestampDiv.textContent = getCurrentTime();
 
             messageDiv.appendChild(contentDiv);
+            messageDiv.appendChild(timestampDiv);
             chatMessages.appendChild(messageDiv);
 
-            // Scroll to bottom
+            // Typing animation for bot messages
+            if (animate && !isUser) {
+                let index = 0;
+                contentDiv.textContent = '';
+
+                const typingInterval = setInterval(() => {
+                    if (index < content.length) {
+                        contentDiv.textContent += content.charAt(index);
+                        index++;
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    } else {
+                        clearInterval(typingInterval);
+                        saveChat();
+                    }
+                }, 30);
+            } else {
+                contentDiv.textContent = content;
+                saveChat();
+            }
+
             chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            if (isUser) {
+                messageCount++;
+                updateCounter();
+            }
         }
 
-        // Send message to backend
         async function sendMessage() {
             const message = userInput.value.trim();
 
             if (!message) return;
 
-            // Add user message to chat
             addMessage(message, true);
             userInput.value = '';
 
-            // Show typing indicator
             typingIndicator.classList.add('show');
 
             try {
@@ -245,31 +334,99 @@
 
                 const data = await response.json();
 
-                // Hide typing indicator
                 typingIndicator.classList.remove('show');
 
-                // Add bot response
                 if (data.response) {
-                    addMessage(data.response, false);
+                    addMessage(data.response, false, true);
                 } else if (data.error) {
-                    addMessage('Sorry, there was an error: ' + data.error, false);
+                    addMessage('Sorry, there was an error: ' + data.error, false, true);
                 }
             } catch (error) {
                 typingIndicator.classList.remove('show');
-                addMessage('❌ Could not connect to server. Make sure backend is running!', false);
+                addMessage('❌ Could not connect to server. Make sure backend is running!', false, true);
                 console.error('Error:', error);
             }
         }
 
-        // Event listeners
+        // FEATURE 3: CHAT HISTORY STORAGE
+        function saveChat() {
+            const messages = [];
+            const messageElements = chatMessages.querySelectorAll('.message');
+
+            messageElements.forEach(msg => {
+                const content = msg.querySelector('.message-content').textContent;
+                const timestamp = msg.querySelector('.timestamp').textContent;
+                const isUser = msg.classList.contains('user');
+
+                messages.push({ content, timestamp, isUser });
+            });
+
+            localStorage.setItem('chatHistory', JSON.stringify(messages));
+            localStorage.setItem('messageCount', messageCount);
+        }
+
+        function loadChat() {
+            const savedMessages = localStorage.getItem('chatHistory');
+            const savedCount = localStorage.getItem('messageCount');
+
+            if (savedMessages) {
+                const messages = JSON.parse(savedMessages);
+                chatMessages.innerHTML = '';
+
+                messages.forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${msg.isUser ? 'user' : 'bot'}`;
+
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'message-content';
+                    contentDiv.textContent = msg.content;
+
+                    const timestampDiv = document.createElement('div');
+                    timestampDiv.className = 'timestamp';
+                    timestampDiv.textContent = msg.timestamp;
+
+                    messageDiv.appendChild(contentDiv);
+                    messageDiv.appendChild(timestampDiv);
+                    chatMessages.appendChild(messageDiv);
+                });
+
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            if (savedCount) {
+                messageCount = parseInt(savedCount);
+                updateCounter();
+            }
+        }
+
+        // FEATURE 1: CLEAR CHAT BUTTON
+        function clearChat() {
+            if (confirm('Are you sure you want to clear the chat?')) {
+                chatMessages.innerHTML = `
+                    <div class="message bot">
+                        <div class="message-content">
+                            👋 Hello! I'm your AI assistant. How can I help you today?
+                        </div>
+                        <div class="timestamp">${getCurrentTime()}</div>
+                    </div>
+                `;
+                messageCount = 0;
+                updateCounter();
+
+                localStorage.removeItem('chatHistory');
+                localStorage.removeItem('messageCount');
+            }
+        }
+
         sendBtn.addEventListener('click', sendMessage);
         userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 sendMessage();
             }
         });
+        document.getElementById('clearBtn').addEventListener('click', clearChat);
 
-        // Test connection when page loads
+        loadChat();
         testConnection();
     </script>
 </body>
