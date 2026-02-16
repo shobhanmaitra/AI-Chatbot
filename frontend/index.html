@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chatbot</title>
+    <title>AI Chatbot - Advanced</title>
     <style>
         * {
             margin: 0;
@@ -23,8 +23,8 @@
 
         .chat-container {
             width: 90%;
-            max-width: 600px;
-            height: 80vh;
+            max-width: 700px;
+            height: 88vh;
             background: white;
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
@@ -36,21 +36,128 @@
         .chat-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
-            text-align: center;
-            font-size: 24px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 20px;
             font-weight: bold;
+        }
+
+        .language-selector {
+            padding: 6px 10px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .language-selector option {
+            background: #667eea;
+            color: white;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            padding: 10px 15px;
+            background: #f9f9f9;
+            border-bottom: 1px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-btn {
+            padding: 7px 12px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .toolbar-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .export-pdf {
+            background: #f44336;
+            color: white;
+        }
+
+        .export-txt {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .clear-btn {
+            background: #FF9800;
+            color: white;
+        }
+
+        .voice-toggle {
+            background: #2196F3;
+            color: white;
+        }
+
+        .voice-toggle.active {
+            background: #0D47A1;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .status {
+            text-align: center;
+            padding: 7px;
+            font-size: 11px;
+            color: #666;
+            background: #f0f0f0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .status.connected {
+            color: #4CAF50;
+        }
+
+        .status.error {
+            color: #f44336;
+        }
+
+        .message-counter {
+            text-align: center;
+            padding: 7px;
+            background: #f9f9f9;
+            font-size: 11px;
+            color: #666;
+            border-bottom: 1px solid #e0e0e0;
         }
 
         .chat-messages {
             flex: 1;
-            padding: 20px;
+            padding: 15px;
             overflow-y: auto;
             background: #f5f5f5;
         }
 
         .message {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             display: flex;
             flex-direction: column;
             animation: fadeIn 0.3s;
@@ -78,8 +185,8 @@
 
         .message-content {
             max-width: 70%;
-            padding: 12px 16px;
-            border-radius: 18px;
+            padding: 10px 14px;
+            border-radius: 16px;
             word-wrap: break-word;
         }
 
@@ -97,51 +204,26 @@
         }
 
         .timestamp {
-            font-size: 11px;
+            font-size: 10px;
             color: #999;
-            margin-top: 4px;
+            margin-top: 3px;
             padding: 0 5px;
         }
 
-        .message-counter {
-            text-align: center;
-            padding: 8px;
-            background: #f0f0f0;
-            font-size: 12px;
-            color: #666;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
         .chat-input-container {
-            padding: 20px;
+            padding: 15px;
             background: white;
             border-top: 1px solid #e0e0e0;
             display: flex;
-            gap: 10px;
-        }
-
-        #clearBtn {
-            padding: 12px 20px;
-            background: #f44336;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        #clearBtn:hover {
-            transform: scale(1.05);
-            background: #d32f2f;
+            gap: 8px;
         }
 
         #userInput {
             flex: 1;
-            padding: 12px 16px;
+            padding: 10px 14px;
             border: 2px solid #e0e0e0;
-            border-radius: 25px;
-            font-size: 16px;
+            border-radius: 20px;
+            font-size: 14px;
             outline: none;
             transition: border 0.3s;
         }
@@ -151,12 +233,12 @@
         }
 
         #sendBtn {
-            padding: 12px 30px;
+            padding: 10px 25px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 25px;
-            font-size: 16px;
+            border-radius: 20px;
+            font-size: 14px;
             cursor: pointer;
             transition: transform 0.2s;
         }
@@ -165,138 +247,299 @@
             transform: scale(1.05);
         }
 
-        #sendBtn:active {
-            transform: scale(0.95);
+        #voiceBtn {
+            padding: 10px 15px;
+            background: #9C27B0;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
         }
 
-        .status {
-            text-align: center;
-            padding: 10px;
-            font-size: 12px;
-            color: #666;
+        #voiceBtn:hover {
+            transform: scale(1.05);
         }
 
-        .status.connected {
-            color: #4CAF50;
-        }
-
-        .status.error {
-            color: #f44336;
+        #voiceBtn.listening {
+            background: #E91E63;
+            animation: pulse 1s infinite;
         }
 
         .typing-indicator {
             display: none;
-            padding: 10px;
+            padding: 8px 15px;
             font-style: italic;
             color: #666;
+            font-size: 12px;
         }
 
         .typing-indicator.show {
             display: block;
         }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 18px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 1000;
+            font-size: 13px;
+        }
+
+        .notification.show {
+            display: block;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <div class="notification" id="notification"></div>
     <div class="chat-container">
         <div class="chat-header">
-            🤖 AI Chatbot
+            <div class="header-title">🤖 <span id="headerText">AI Chatbot</span></div>
+            <select class="language-selector" id="languageSelector">
+                <option value="en">🇬🇧 English</option>
+                <option value="hi">🇮🇳 हिंदी</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="de">🇩🇪 Deutsch</option>
+            </select>
         </div>
-
-        <div class="status" id="status">Connecting to server...</div>
-
+        <div class="toolbar">
+            <button class="toolbar-btn export-pdf" id="exportPdfBtn">📄 <span id="exportPdfText">PDF</span></button>
+            <button class="toolbar-btn export-txt" id="exportTxtBtn">📝 <span id="exportTxtText">TXT</span></button>
+            <button class="toolbar-btn clear-btn" id="clearBtn">🗑️ <span id="clearText">Clear</span></button>
+            <button class="toolbar-btn voice-toggle" id="voiceToggle">🔊 <span id="voiceToggleText">TTS:
+                    OFF</span></button>
+        </div>
+        <div class="status" id="status"><span id="statusText">Connecting...</span></div>
         <div class="message-counter" id="messageCounter">
-            Messages sent: 0
+            <span id="counterText">Messages:</span> <span id="counterValue">0</span>
         </div>
-
         <div class="chat-messages" id="chatMessages">
             <div class="message bot">
                 <div class="message-content">
-                    👋 Hello! I'm your AI assistant. How can I help you today?
+                    <span id="welcomeMessage">👋 Hello! I'm your AI assistant. How can I help you today?</span>
                 </div>
                 <div class="timestamp" id="initialTime"></div>
             </div>
         </div>
-
-        <div class="typing-indicator" id="typingIndicator">Bot is typing...</div>
-
+        <div class="typing-indicator" id="typingIndicator"><span id="typingText">Bot is typing...</span></div>
         <div class="chat-input-container">
-            <button id="clearBtn">Clear</button>
+            <button id="voiceBtn" title="Voice Input">🎤</button>
             <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
-            <button id="sendBtn">Send</button>
+            <button id="sendBtn"><span id="sendText">Send</span></button>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         const API_URL = 'http://localhost:5000';
         const chatMessages = document.getElementById('chatMessages');
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
+        const voiceBtn = document.getElementById('voiceBtn');
         const status = document.getElementById('status');
         const typingIndicator = document.getElementById('typingIndicator');
-        const messageCounter = document.getElementById('messageCounter');
+        const languageSelector = document.getElementById('languageSelector');
+        const voiceToggle = document.getElementById('voiceToggle');
+        const notification = document.getElementById('notification');
 
         let messageCount = 0;
+        let currentLanguage = 'en';
+        let ttsEnabled = false;
+
+        // FEATURE 3: MULTI-LANGUAGE TRANSLATIONS
+        const translations = {
+            en: { header: "AI Chatbot", exportPdf: "PDF", exportTxt: "TXT", clear: "Clear", ttsOn: "TTS: ON", ttsOff: "TTS: OFF", connecting: "Connecting...", connected: "✅ Connected", disconnected: "❌ Disconnected", messagesText: "Messages:", typing: "Bot is typing...", welcome: "👋 Hello! I'm your AI assistant. How can I help you today?", placeholder: "Type your message...", send: "Send", clearConfirm: "Clear chat?", exportedPdf: "Exported as PDF!", exportedTxt: "Exported as TXT!" },
+            hi: { header: "एआई चैटबॉट", exportPdf: "PDF", exportTxt: "TXT", clear: "साफ़", ttsOn: "TTS: चालू", ttsOff: "TTS: बंद", connecting: "कनेक्ट हो रहा है...", connected: "✅ कनेक्टेड", disconnected: "❌ डिसकनेक्टेड", messagesText: "संदेश:", typing: "बॉट टाइप कर रहा है...", welcome: "👋 नमस्ते! मैं आपका सहायक हूं। मैं आपकी कैसे मदद कर सकता हूं?", placeholder: "संदेश टाइप करें...", send: "भेजें", clearConfirm: "चैट साफ़ करें?", exportedPdf: "PDF निर्यात किया गया!", exportedTxt: "TXT निर्यात किया गया!" },
+            es: { header: "Chatbot IA", exportPdf: "PDF", exportTxt: "TXT", clear: "Limpiar", ttsOn: "TTS: ON", ttsOff: "TTS: OFF", connecting: "Conectando...", connected: "✅ Conectado", disconnected: "❌ Desconectado", messagesText: "Mensajes:", typing: "Bot escribiendo...", welcome: "👋 ¡Hola! Soy tu asistente. ¿Cómo puedo ayudarte?", placeholder: "Escribe...", send: "Enviar", clearConfirm: "¿Borrar chat?", exportedPdf: "¡Exportado como PDF!", exportedTxt: "¡Exportado como TXT!" },
+            fr: { header: "Chatbot IA", exportPdf: "PDF", exportTxt: "TXT", clear: "Effacer", ttsOn: "TTS: ON", ttsOff: "TTS: OFF", connecting: "Connexion...", connected: "✅ Connecté", disconnected: "❌ Déconnecté", messagesText: "Messages:", typing: "Bot écrit...", welcome: "👋 Bonjour! Je suis votre assistant. Comment puis-je vous aider?", placeholder: "Tapez...", send: "Envoyer", clearConfirm: "Effacer le chat?", exportedPdf: "Exporté en PDF!", exportedTxt: "Exporté en TXT!" },
+            de: { header: "KI-Chatbot", exportPdf: "PDF", exportTxt: "TXT", clear: "Löschen", ttsOn: "TTS: EIN", ttsOff: "TTS: AUS", connecting: "Verbindung...", connected: "✅ Verbunden", disconnected: "❌ Getrennt", messagesText: "Nachrichten:", typing: "Bot tippt...", welcome: "👋 Hallo! Ich bin Ihr Assistent. Wie kann ich helfen?", placeholder: "Tippen...", send: "Senden", clearConfirm: "Chat löschen?", exportedPdf: "Als PDF exportiert!", exportedTxt: "Als TXT exportiert!" }
+        };
+
+        function updateLanguage(lang) {
+            currentLanguage = lang;
+            const t = translations[lang];
+            document.getElementById('headerText').textContent = t.header;
+            document.getElementById('exportPdfText').textContent = t.exportPdf;
+            document.getElementById('exportTxtText').textContent = t.exportTxt;
+            document.getElementById('clearText').textContent = t.clear;
+            document.getElementById('voiceToggleText').textContent = ttsEnabled ? t.ttsOn : t.ttsOff;
+            document.getElementById('counterText').textContent = t.messagesText;
+            document.getElementById('typingText').textContent = t.typing;
+            document.getElementById('sendText').textContent = t.send;
+            userInput.placeholder = t.placeholder;
+            if (status.classList.contains('connected')) document.getElementById('statusText').textContent = t.connected;
+            else if (status.classList.contains('error')) document.getElementById('statusText').textContent = t.disconnected;
+            else document.getElementById('statusText').textContent = t.connecting;
+        }
+
+        languageSelector.addEventListener('change', (e) => {
+            updateLanguage(e.target.value);
+            showNotification('Language: ' + e.target.options[e.target.selectedIndex].text);
+        });
+
+        // FEATURE 2: VOICE INPUT (Speech Recognition)
+        let recognition = null;
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.onstart = () => { voiceBtn.classList.add('listening'); voiceBtn.textContent = '🔴'; };
+            recognition.onend = () => { voiceBtn.classList.remove('listening'); voiceBtn.textContent = '🎤'; };
+            recognition.onresult = (e) => { userInput.value = e.results[0][0].transcript; sendMessage(); };
+            recognition.onerror = () => { voiceBtn.classList.remove('listening'); voiceBtn.textContent = '🎤'; };
+        }
+
+        voiceBtn.addEventListener('click', () => {
+            if (recognition) {
+                if (voiceBtn.classList.contains('listening')) recognition.stop();
+                else {
+                    recognition.lang = currentLanguage === 'hi' ? 'hi-IN' : currentLanguage === 'es' ? 'es-ES' : currentLanguage === 'fr' ? 'fr-FR' : currentLanguage === 'de' ? 'de-DE' : 'en-US';
+                    recognition.start();
+                }
+            } else alert('Voice not supported. Use Chrome/Edge/Safari.');
+        });
+
+        // FEATURE 2: TEXT-TO-SPEECH
+        function speakText(text) {
+            if (!ttsEnabled || !('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = currentLanguage === 'hi' ? 'hi-IN' : currentLanguage === 'es' ? 'es-ES' : currentLanguage === 'fr' ? 'fr-FR' : currentLanguage === 'de' ? 'de-DE' : 'en-US';
+            window.speechSynthesis.speak(utterance);
+        }
+
+        voiceToggle.addEventListener('click', () => {
+            ttsEnabled = !ttsEnabled;
+            voiceToggle.classList.toggle('active');
+            document.getElementById('voiceToggleText').textContent = translations[currentLanguage][ttsEnabled ? 'ttsOn' : 'ttsOff'];
+            showNotification('TTS: ' + (ttsEnabled ? 'ON' : 'OFF'));
+        });
+
+        // FEATURE 5: EXPORT TO PDF
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const msgs = Array.from(chatMessages.querySelectorAll('.message')).map(m => ({
+                sender: m.classList.contains('user') ? 'User' : 'Bot',
+                content: m.querySelector('.message-content').textContent,
+                time: m.querySelector('.timestamp').textContent
+            }));
+            doc.setFontSize(16); doc.text('AI Chatbot Conversation', 20, 20);
+            doc.setFontSize(10); doc.text(`Date: ${new Date().toLocaleString()}`, 20, 30);
+            doc.text(`Messages: ${messageCount}`, 20, 35);
+            let y = 45;
+            doc.setFontSize(11);
+            msgs.forEach(msg => {
+                if (y > 270) { doc.addPage(); y = 20; }
+                doc.setFont(undefined, 'bold');
+                doc.text(`${msg.sender} [${msg.time}]:`, 20, y); y += 5;
+                doc.setFont(undefined, 'normal');
+                const lines = doc.splitTextToSize(msg.content, 170);
+                doc.text(lines, 20, y);
+                y += lines.length * 5 + 5;
+            });
+            doc.save(`chat-${Date.now()}.pdf`);
+            showNotification(translations[currentLanguage].exportedPdf);
+        }
+
+        // FEATURE 5: EXPORT TO TXT
+        function exportToTXT() {
+            let txt = `AI Chatbot Conversation\n${'='.repeat(30)}\nDate: ${new Date().toLocaleString()}\nMessages: ${messageCount}\n${'='.repeat(30)}\n\n`;
+            chatMessages.querySelectorAll('.message').forEach(m => {
+                const sender = m.classList.contains('user') ? 'User' : 'Bot';
+                const content = m.querySelector('.message-content').textContent;
+                const time = m.querySelector('.timestamp').textContent;
+                txt += `[${time}] ${sender}: ${content}\n\n`;
+            });
+            const blob = new Blob([txt], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `chat-${Date.now()}.txt`;
+            a.click();
+            showNotification(translations[currentLanguage].exportedTxt);
+        }
+
+        document.getElementById('exportPdfBtn').addEventListener('click', exportToPDF);
+        document.getElementById('exportTxtBtn').addEventListener('click', exportToTXT);
+
+        function showNotification(msg) {
+            notification.textContent = msg;
+            notification.classList.add('show');
+            setTimeout(() => notification.classList.remove('show'), 2500);
+        }
 
         function getCurrentTime() {
             const now = new Date();
-            let hours = now.getHours();
-            let minutes = now.getMinutes();
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-
-            hours = hours % 12;
-            hours = hours ? hours : 12;
-            minutes = minutes < 10 ? '0' + minutes : minutes;
-
-            return `${hours}:${minutes} ${ampm}`;
+            let h = now.getHours(), m = now.getMinutes();
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            m = m < 10 ? '0' + m : m;
+            return `${h}:${m} ${ampm}`;
         }
 
         document.getElementById('initialTime').textContent = getCurrentTime();
 
         function updateCounter() {
-            messageCounter.textContent = `Messages sent: ${messageCount}`;
+            document.getElementById('counterValue').textContent = messageCount;
         }
 
         async function testConnection() {
             try {
-                const response = await fetch(`${API_URL}/test`);
-                const data = await response.json();
-                status.textContent = '✅ Connected to server';
+                await fetch(`${API_URL}/test`);
+                document.getElementById('statusText').textContent = translations[currentLanguage].connected;
                 status.className = 'status connected';
-            } catch (error) {
-                status.textContent = '❌ Server not connected - Please start backend';
+            } catch {
+                document.getElementById('statusText').textContent = translations[currentLanguage].disconnected;
                 status.className = 'status error';
             }
         }
 
-        // FEATURE 2: TYPING ANIMATION
         function addMessage(content, isUser, animate = false) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
-
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content';
-
             const timestampDiv = document.createElement('div');
             timestampDiv.className = 'timestamp';
             timestampDiv.textContent = getCurrentTime();
-
             messageDiv.appendChild(contentDiv);
             messageDiv.appendChild(timestampDiv);
             chatMessages.appendChild(messageDiv);
 
-            // Typing animation for bot messages
             if (animate && !isUser) {
-                let index = 0;
+                let i = 0;
                 contentDiv.textContent = '';
-
-                const typingInterval = setInterval(() => {
-                    if (index < content.length) {
-                        contentDiv.textContent += content.charAt(index);
-                        index++;
+                const interval = setInterval(() => {
+                    if (i < content.length) {
+                        contentDiv.textContent += content.charAt(i++);
                         chatMessages.scrollTop = chatMessages.scrollHeight;
                     } else {
-                        clearInterval(typingInterval);
+                        clearInterval(interval);
+                        speakText(content);
                         saveChat();
                     }
                 }, 30);
@@ -306,124 +549,71 @@
             }
 
             chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            if (isUser) {
-                messageCount++;
-                updateCounter();
-            }
+            if (isUser) { messageCount++; updateCounter(); }
         }
 
         async function sendMessage() {
-            const message = userInput.value.trim();
-
-            if (!message) return;
-
-            addMessage(message, true);
+            const msg = userInput.value.trim();
+            if (!msg) return;
+            addMessage(msg, true);
             userInput.value = '';
-
             typingIndicator.classList.add('show');
 
             try {
-                const response = await fetch(`${API_URL}/chat`, {
+                const res = await fetch(`${API_URL}/chat`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ message: message })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg, language: currentLanguage })
                 });
-
-                const data = await response.json();
-
+                const data = await res.json();
                 typingIndicator.classList.remove('show');
-
-                if (data.response) {
-                    addMessage(data.response, false, true);
-                } else if (data.error) {
-                    addMessage('Sorry, there was an error: ' + data.error, false, true);
-                }
-            } catch (error) {
+                if (data.response) addMessage(data.response, false, true);
+                else if (data.error) addMessage('Error: ' + data.error, false, true);
+            } catch {
                 typingIndicator.classList.remove('show');
-                addMessage('❌ Could not connect to server. Make sure backend is running!', false, true);
-                console.error('Error:', error);
+                addMessage('❌ Server error!', false, true);
             }
         }
 
-        // FEATURE 3: CHAT HISTORY STORAGE
         function saveChat() {
-            const messages = [];
-            const messageElements = chatMessages.querySelectorAll('.message');
-
-            messageElements.forEach(msg => {
-                const content = msg.querySelector('.message-content').textContent;
-                const timestamp = msg.querySelector('.timestamp').textContent;
-                const isUser = msg.classList.contains('user');
-
-                messages.push({ content, timestamp, isUser });
-            });
-
-            localStorage.setItem('chatHistory', JSON.stringify(messages));
+            const msgs = Array.from(chatMessages.querySelectorAll('.message')).map(m => ({
+                content: m.querySelector('.message-content').textContent,
+                timestamp: m.querySelector('.timestamp').textContent,
+                isUser: m.classList.contains('user')
+            }));
+            localStorage.setItem('chatHistory', JSON.stringify(msgs));
             localStorage.setItem('messageCount', messageCount);
         }
 
         function loadChat() {
-            const savedMessages = localStorage.getItem('chatHistory');
-            const savedCount = localStorage.getItem('messageCount');
-
-            if (savedMessages) {
-                const messages = JSON.parse(savedMessages);
+            const saved = localStorage.getItem('chatHistory');
+            const count = localStorage.getItem('messageCount');
+            if (saved) {
                 chatMessages.innerHTML = '';
-
-                messages.forEach(msg => {
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = `message ${msg.isUser ? 'user' : 'bot'}`;
-
-                    const contentDiv = document.createElement('div');
-                    contentDiv.className = 'message-content';
-                    contentDiv.textContent = msg.content;
-
-                    const timestampDiv = document.createElement('div');
-                    timestampDiv.className = 'timestamp';
-                    timestampDiv.textContent = msg.timestamp;
-
-                    messageDiv.appendChild(contentDiv);
-                    messageDiv.appendChild(timestampDiv);
-                    chatMessages.appendChild(messageDiv);
+                JSON.parse(saved).forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = `message ${m.isUser ? 'user' : 'bot'}`;
+                    div.innerHTML = `<div class="message-content">${m.content}</div><div class="timestamp">${m.timestamp}</div>`;
+                    chatMessages.appendChild(div);
                 });
-
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
-
-            if (savedCount) {
-                messageCount = parseInt(savedCount);
-                updateCounter();
-            }
+            if (count) { messageCount = parseInt(count); updateCounter(); }
         }
 
-        // FEATURE 1: CLEAR CHAT BUTTON
         function clearChat() {
-            if (confirm('Are you sure you want to clear the chat?')) {
-                chatMessages.innerHTML = `
-                    <div class="message bot">
-                        <div class="message-content">
-                            👋 Hello! I'm your AI assistant. How can I help you today?
-                        </div>
-                        <div class="timestamp">${getCurrentTime()}</div>
-                    </div>
-                `;
+            if (confirm(translations[currentLanguage].clearConfirm)) {
+                chatMessages.innerHTML = `<div class="message bot"><div class="message-content"><span id="welcomeMessage">${translations[currentLanguage].welcome}</span></div><div class="timestamp">${getCurrentTime()}</div></div>`;
                 messageCount = 0;
                 updateCounter();
-
                 localStorage.removeItem('chatHistory');
                 localStorage.removeItem('messageCount');
+                showNotification('Chat cleared!');
             }
         }
 
         sendBtn.addEventListener('click', sendMessage);
-        userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
+        userInput.addEventListener('keypress', e => e.key === 'Enter' && sendMessage());
         document.getElementById('clearBtn').addEventListener('click', clearChat);
 
         loadChat();
