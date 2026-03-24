@@ -4,7 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chatbot - Advanced</title>
+    <title>AI Tourism Chatbot</title>
+
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- jsPDF Library for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -15,16 +22,17 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
 
         .chat-container {
-            width: 90%;
-            max-width: 700px;
-            height: 88vh;
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
             background: white;
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
@@ -44,6 +52,14 @@
 
         .header-title {
             font-size: 20px;
+            font-weight: bold;
+        }
+
+        .ai-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 11px;
             font-weight: bold;
         }
 
@@ -111,16 +127,9 @@
             background: #0D47A1;
         }
 
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
+        .chart-btn {
+            background: #9C27B0;
+            color: white;
         }
 
         .status {
@@ -184,10 +193,11 @@
         }
 
         .message-content {
-            max-width: 70%;
+            max-width: 75%;
             padding: 10px 14px;
             border-radius: 16px;
             word-wrap: break-word;
+            white-space: pre-wrap;
         }
 
         .message.user .message-content {
@@ -203,11 +213,76 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
+        .ai-powered-badge {
+            font-size: 9px;
+            background: #4CAF50;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 8px;
+            margin-top: 3px;
+            display: inline-block;
+        }
+
         .timestamp {
             font-size: 10px;
             color: #999;
             margin-top: 3px;
             padding: 0 5px;
+        }
+
+        /* Chart Container */
+        .chart-container-wrapper {
+            display: none;
+            background: white;
+            padding: 15px;
+            margin: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container-wrapper.show {
+            display: block;
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .close-chart {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .chart-canvas-container {
+            height: 300px;
+            position: relative;
         }
 
         .chat-input-container {
@@ -267,6 +342,18 @@
             animation: pulse 1s infinite;
         }
 
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
         .typing-indicator {
             display: none;
             padding: 8px 15px;
@@ -314,9 +401,13 @@
 
 <body>
     <div class="notification" id="notification"></div>
+
     <div class="chat-container">
         <div class="chat-header">
-            <div class="header-title">🤖 <span id="headerText">AI Chatbot</span></div>
+            <div>
+                <div class="header-title">🤖 <span id="headerText">AI Tourism Chatbot</span></div>
+                <div class="ai-badge">🧠 Powered by Google Gemini</div>
+            </div>
             <select class="language-selector" id="languageSelector">
                 <option value="en">🇬🇧 English</option>
                 <option value="hi">🇮🇳 हिंदी</option>
@@ -325,34 +416,68 @@
                 <option value="de">🇩🇪 Deutsch</option>
             </select>
         </div>
+
         <div class="toolbar">
+            <button class="toolbar-btn chart-btn" onclick="showHotelPricesChart()">📊 Hotel Prices</button>
+            <button class="toolbar-btn chart-btn" onclick="showDestinationRatingsChart()">⭐ Ratings</button>
+            <button class="toolbar-btn chart-btn" onclick="showAttractionPricesChart()">🎫 Attractions</button>
+            <button class="toolbar-btn chart-btn" onclick="showPackagePricesChart()">📦 Packages</button>
             <button class="toolbar-btn export-pdf" id="exportPdfBtn">📄 <span id="exportPdfText">PDF</span></button>
             <button class="toolbar-btn export-txt" id="exportTxtBtn">📝 <span id="exportTxtText">TXT</span></button>
             <button class="toolbar-btn clear-btn" id="clearBtn">🗑️ <span id="clearText">Clear</span></button>
             <button class="toolbar-btn voice-toggle" id="voiceToggle">🔊 <span id="voiceToggleText">TTS:
                     OFF</span></button>
         </div>
+
         <div class="status" id="status"><span id="statusText">Connecting...</span></div>
+
         <div class="message-counter" id="messageCounter">
             <span id="counterText">Messages:</span> <span id="counterValue">0</span>
         </div>
+
         <div class="chat-messages" id="chatMessages">
             <div class="message bot">
                 <div class="message-content">
-                    <span id="welcomeMessage">👋 Hello! I'm your AI assistant. How can I help you today?</span>
+                    <span id="welcomeMessage">👋 Hello! I'm your AI-powered Rajasthan Tourism Assistant powered by
+                        Google Gemini!
+
+                        I can help you with:
+                        🏨 Smart hotel recommendations
+                        🎯 Tourist attractions
+                        📦 Tour packages
+                        📊 Interactive data visualizations
+                        ✈️ Trip planning
+
+                        Try asking: "Recommend a romantic hotel in Udaipur" or "Compare hotel prices"</span>
                 </div>
                 <div class="timestamp" id="initialTime"></div>
             </div>
         </div>
-        <div class="typing-indicator" id="typingIndicator"><span id="typingText">Bot is typing...</span></div>
+
+        <!-- Chart Container -->
+        <div class="chart-container-wrapper" id="chartContainer">
+            <div class="chart-header">
+                <div class="chart-title" id="chartTitle">📊 Data Visualization</div>
+                <button class="close-chart" onclick="hideChartContainer()">✕ Close</button>
+            </div>
+            <div class="chart-canvas-container">
+                <canvas id="chartCanvas"></canvas>
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator"><span id="typingText">🤖 AI is thinking...</span></div>
+
         <div class="chat-input-container">
             <button id="voiceBtn" title="Voice Input">🎤</button>
-            <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
+            <input type="text" id="userInput" placeholder="Ask me anything about Rajasthan tourism..."
+                autocomplete="off">
             <button id="sendBtn"><span id="sendText">Send</span></button>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Include Chart.js functions -->
+    <script src="charts.js"></script>
+
     <script>
         const API_URL = 'http://localhost:5000';
         const chatMessages = document.getElementById('chatMessages');
@@ -369,13 +494,13 @@
         let currentLanguage = 'en';
         let ttsEnabled = false;
 
-        // FEATURE 3: MULTI-LANGUAGE TRANSLATIONS
+        // Translations (same as before)
         const translations = {
-            en: { header: "AI Chatbot", exportPdf: "PDF", exportTxt: "TXT", clear: "Clear", ttsOn: "TTS: ON", ttsOff: "TTS: OFF", connecting: "Connecting...", connected: "✅ Connected", disconnected: "❌ Disconnected", messagesText: "Messages:", typing: "Bot is typing...", welcome: "👋 Hello! I'm your AI assistant. How can I help you today?", placeholder: "Type your message...", send: "Send", clearConfirm: "Clear chat?", exportedPdf: "Exported as PDF!", exportedTxt: "Exported as TXT!" },
-            hi: { header: "एआई चैटबॉट", exportPdf: "PDF", exportTxt: "TXT", clear: "साफ़", ttsOn: "TTS: चालू", ttsOff: "TTS: बंद", connecting: "कनेक्ट हो रहा है...", connected: "✅ कनेक्टेड", disconnected: "❌ डिसकनेक्टेड", messagesText: "संदेश:", typing: "बॉट टाइप कर रहा है...", welcome: "👋 नमस्ते! मैं आपका सहायक हूं। मैं आपकी कैसे मदद कर सकता हूं?", placeholder: "संदेश टाइप करें...", send: "भेजें", clearConfirm: "चैट साफ़ करें?", exportedPdf: "PDF निर्यात किया गया!", exportedTxt: "TXT निर्यात किया गया!" },
-            es: { header: "Chatbot IA", exportPdf: "PDF", exportTxt: "TXT", clear: "Limpiar", ttsOn: "TTS: ON", ttsOff: "TTS: OFF", connecting: "Conectando...", connected: "✅ Conectado", disconnected: "❌ Desconectado", messagesText: "Mensajes:", typing: "Bot escribiendo...", welcome: "👋 ¡Hola! Soy tu asistente. ¿Cómo puedo ayudarte?", placeholder: "Escribe...", send: "Enviar", clearConfirm: "¿Borrar chat?", exportedPdf: "¡Exportado como PDF!", exportedTxt: "¡Exportado como TXT!" },
-            fr: { header: "Chatbot IA", exportPdf: "PDF", exportTxt: "TXT", clear: "Effacer", ttsOn: "TTS: ON", ttsOff: "TTS: OFF", connecting: "Connexion...", connected: "✅ Connecté", disconnected: "❌ Déconnecté", messagesText: "Messages:", typing: "Bot écrit...", welcome: "👋 Bonjour! Je suis votre assistant. Comment puis-je vous aider?", placeholder: "Tapez...", send: "Envoyer", clearConfirm: "Effacer le chat?", exportedPdf: "Exporté en PDF!", exportedTxt: "Exporté en TXT!" },
-            de: { header: "KI-Chatbot", exportPdf: "PDF", exportTxt: "TXT", clear: "Löschen", ttsOn: "TTS: EIN", ttsOff: "TTS: AUS", connecting: "Verbindung...", connected: "✅ Verbunden", disconnected: "❌ Getrennt", messagesText: "Nachrichten:", typing: "Bot tippt...", welcome: "👋 Hallo! Ich bin Ihr Assistent. Wie kann ich helfen?", placeholder: "Tippen...", send: "Senden", clearConfirm: "Chat löschen?", exportedPdf: "Als PDF exportiert!", exportedTxt: "Als TXT exportiert!" }
+            en: { header: "AI Tourism Chatbot", exportPdf: "PDF", exportTxt: "TXT", clear: "Clear", ttsOn: "TTS: ON", ttsOff: "TTS: OFF", connecting: "Connecting...", connected: "✅ Connected (AI Ready)", disconnected: "❌ Disconnected", messagesText: "Messages:", typing: "🤖 AI is thinking...", placeholder: "Ask me anything...", send: "Send", clearConfirm: "Clear chat?", exportedPdf: "Exported as PDF!", exportedTxt: "Exported as TXT!" },
+            hi: { header: "एआई टूरिज्म चैटबॉट", exportPdf: "PDF", exportTxt: "TXT", clear: "साफ़", ttsOn: "TTS: चालू", ttsOff: "TTS: बंद", connecting: "कनेक्ट हो रहा है...", connected: "✅ कनेक्टेड (AI तैयार)", disconnected: "❌ डिसकनेक्टेड", messagesText: "संदेश:", typing: "🤖 AI सोच रहा है...", placeholder: "कुछ भी पूछें...", send: "भेजें", clearConfirm: "चैट साफ़ करें?", exportedPdf: "PDF निर्यात किया गया!", exportedTxt: "TXT निर्यात किया गया!" },
+            es: { header: "Chatbot de Turismo IA", exportPdf: "PDF", exportTxt: "TXT", clear: "Limpiar", ttsOn: "TTS: ON", ttsOff: "TTS: OFF", connecting: "Conectando...", connected: "✅ Conectado (IA lista)", disconnected: "❌ Desconectado", messagesText: "Mensajes:", typing: "🤖 IA está pensando...", placeholder: "Pregúntame...", send: "Enviar", clearConfirm: "¿Borrar chat?", exportedPdf: "¡Exportado como PDF!", exportedTxt: "¡Exportado como TXT!" },
+            fr: { header: "Chatbot Tourisme IA", exportPdf: "PDF", exportTxt: "TXT", clear: "Effacer", ttsOn: "TTS: ON", ttsOff: "TTS: OFF", connecting: "Connexion...", connected: "✅ Connecté (IA prête)", disconnected: "❌ Déconnecté", messagesText: "Messages:", typing: "🤖 IA réfléchit...", placeholder: "Demandez-moi...", send: "Envoyer", clearConfirm: "Effacer le chat?", exportedPdf: "Exporté en PDF!", exportedTxt: "Exporté en TXT!" },
+            de: { header: "KI-Tourismus-Chatbot", exportPdf: "PDF", exportTxt: "TXT", clear: "Löschen", ttsOn: "TTS: EIN", ttsOff: "TTS: AUS", connecting: "Verbindung...", connected: "✅ Verbunden (KI bereit)", disconnected: "❌ Getrennt", messagesText: "Nachrichten:", typing: "🤖 KI denkt nach...", placeholder: "Frag mich...", send: "Senden", clearConfirm: "Chat löschen?", exportedPdf: "Als PDF exportiert!", exportedTxt: "Als TXT exportiert!" }
         };
 
         function updateLanguage(lang) {
@@ -400,7 +525,7 @@
             showNotification('Language: ' + e.target.options[e.target.selectedIndex].text);
         });
 
-        // FEATURE 2: VOICE INPUT (Speech Recognition)
+        // Voice Input
         let recognition = null;
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -423,7 +548,7 @@
             } else alert('Voice not supported. Use Chrome/Edge/Safari.');
         });
 
-        // FEATURE 2: TEXT-TO-SPEECH
+        // Text-to-Speech
         function speakText(text) {
             if (!ttsEnabled || !('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
@@ -439,7 +564,7 @@
             showNotification('TTS: ' + (ttsEnabled ? 'ON' : 'OFF'));
         });
 
-        // FEATURE 5: EXPORT TO PDF
+        // Export functions (same as before)
         function exportToPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
@@ -448,9 +573,8 @@
                 content: m.querySelector('.message-content').textContent,
                 time: m.querySelector('.timestamp').textContent
             }));
-            doc.setFontSize(16); doc.text('AI Chatbot Conversation', 20, 20);
+            doc.setFontSize(16); doc.text('AI Tourism Chatbot Conversation', 20, 20);
             doc.setFontSize(10); doc.text(`Date: ${new Date().toLocaleString()}`, 20, 30);
-            doc.text(`Messages: ${messageCount}`, 20, 35);
             let y = 45;
             doc.setFontSize(11);
             msgs.forEach(msg => {
@@ -466,9 +590,8 @@
             showNotification(translations[currentLanguage].exportedPdf);
         }
 
-        // FEATURE 5: EXPORT TO TXT
         function exportToTXT() {
-            let txt = `AI Chatbot Conversation\n${'='.repeat(30)}\nDate: ${new Date().toLocaleString()}\nMessages: ${messageCount}\n${'='.repeat(30)}\n\n`;
+            let txt = `AI Tourism Chatbot Conversation\n${'='.repeat(30)}\nDate: ${new Date().toLocaleString()}\n${'='.repeat(30)}\n\n`;
             chatMessages.querySelectorAll('.message').forEach(m => {
                 const sender = m.classList.contains('user') ? 'User' : 'Bot';
                 const content = m.querySelector('.message-content').textContent;
@@ -518,7 +641,7 @@
             }
         }
 
-        function addMessage(content, isUser, animate = false) {
+        function addMessage(content, isUser, animate = false, aiPowered = false) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
             const contentDiv = document.createElement('div');
@@ -526,6 +649,15 @@
             const timestampDiv = document.createElement('div');
             timestampDiv.className = 'timestamp';
             timestampDiv.textContent = getCurrentTime();
+
+            if (aiPowered && !isUser) {
+                const badge = document.createElement('div');
+                badge.className = 'ai-powered-badge';
+                badge.textContent = '🧠 AI Generated';
+                timestampDiv.appendChild(document.createElement('br'));
+                timestampDiv.appendChild(badge);
+            }
+
             messageDiv.appendChild(contentDiv);
             messageDiv.appendChild(timestampDiv);
             chatMessages.appendChild(messageDiv);
@@ -542,7 +674,7 @@
                         speakText(content);
                         saveChat();
                     }
-                }, 30);
+                }, 15);
             } else {
                 contentDiv.textContent = content;
                 saveChat();
@@ -563,12 +695,19 @@
                 const res = await fetch(`${API_URL}/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: msg, language: currentLanguage })
+                    body: JSON.stringify({ message: msg, language: currentLanguage, use_ai: true })
                 });
                 const data = await res.json();
                 typingIndicator.classList.remove('show');
-                if (data.response) addMessage(data.response, false, true);
-                else if (data.error) addMessage('Error: ' + data.error, false, true);
+
+                if (data.response) {
+                    addMessage(data.response, false, true, data.ai_powered);
+
+                    // Auto-show chart if suggested
+                    if (data.chart_data && data.chart_data.type) {
+                        setTimeout(() => autoShowChart(data.chart_data.type), 1000);
+                    }
+                } else if (data.error) addMessage('Error: ' + data.error, false, true);
             } catch {
                 typingIndicator.classList.remove('show');
                 addMessage('❌ Server error!', false, true);
@@ -603,11 +742,12 @@
 
         function clearChat() {
             if (confirm(translations[currentLanguage].clearConfirm)) {
-                chatMessages.innerHTML = `<div class="message bot"><div class="message-content"><span id="welcomeMessage">${translations[currentLanguage].welcome}</span></div><div class="timestamp">${getCurrentTime()}</div></div>`;
+                chatMessages.innerHTML = `<div class="message bot"><div class="message-content">👋 Chat cleared! How can I help you?</div><div class="timestamp">${getCurrentTime()}</div></div>`;
                 messageCount = 0;
                 updateCounter();
                 localStorage.removeItem('chatHistory');
                 localStorage.removeItem('messageCount');
+                hideChartContainer();
                 showNotification('Chat cleared!');
             }
         }
